@@ -15,10 +15,6 @@ class DriftDetection:
         val = self.stream_data.iloc[i, self.stream_data.columns.get_loc(col)]
         return val
 
-    # def update(self, i, col):
-    #
-    #     val = self.stream_val(i, col)
-    #     self.detector.update(val)
 
     def detection_mess(self, i, col):
         mess = 'Change detected in data: ' + str(self.stream_val(i, col)) + \
@@ -27,6 +23,12 @@ class DriftDetection:
         return mess
 
     def get_drifts(self, i, col, val):
+        """
+        :param i: row number of the value tested for drift
+        :param col: name of the feature tested
+        :param val: value tested for drift
+        :return: list of detected drifts in the data
+        """
 
         self.detector.update(val)
 
@@ -37,6 +39,10 @@ class DriftDetection:
             self.detector.reset()
 
     def stream_detection(self):
+        """
+        iterates over the stream of data by feature.
+        :return: dataFrame of dates and features exhibiting drift
+        """
         for col in self.stream_data.columns:
             for i, val in enumerate(self.stream_data[col]):
         # for i, row in self.stream_data.iterrows():
@@ -45,16 +51,19 @@ class DriftDetection:
         self.detector.reset()
 
         drift_df = pd.DataFrame({
-            'date':self.drift_dates,
+            'date': self.drift_dates,
             'feature': self.drift_cols
         })
 
         return drift_df
 
-    # def elbow(self):
 
 def feature_drifts(drift_df, col):
-
+    """
+    :param drift_df: dataframe of all drifts detected, for all features
+    :param col: feature for which drifts are extracted
+    :return: only drifts that occurred for feature 'col'
+    """
     return drift_df.loc[drift_df.feature == col, 'date']
 
 

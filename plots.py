@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.express as px
 from config import *
 
+
 def plot_hist(data, col):
     fig = px.histogram(data, x=col)
     return fig
@@ -10,9 +11,6 @@ def plot_hist(data, col):
 def line_metrics(data, y_col, x_col):
 
     daily_mean = data.groupby(x_col)[y_col].mean().reset_index()
-    #y_mean = grouped_y.mean
-
-    #q25, q75 = np.percentile()
 
     return daily_mean
 
@@ -40,7 +38,21 @@ def plot_line(data, y_col, x_col='created_at', p_title=None):
     return fig
 
 
+def plot_line_oh(data, y_col, x_col='created_at', p_title=None):
+
+    daily_count = data.groupby(x_col)[y_col].sum().reset_index()
+
+    if p_title is None:
+        p_title = y_col
+
+    fig = px.line(daily_count, x=x_col, y=y_col, title=p_title)
+
+    return fig
+
+
+
 def plot_line_cat(data, y_col, x_col='created_at'):
+
 
     daily = cat_count(data, y_col, x_col)
 

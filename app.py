@@ -32,7 +32,7 @@ def main():
 
     st.markdown('''
     The plot above indicates a possible drift has started following February 19th. 
-    While prior to it, the average score is ranging from 0.45 to 0.47, following February 19th,
+    While prior to it, the average score is stationary, and ranging from 0.45 to 0.47, following February 19th,
     the average score sharply climbs to approximately 0.52.\n
     We should therefore look for any drift occurring in that period, in one or more features.     
     ''')
@@ -118,7 +118,8 @@ def main():
     st.markdown('### Training Dataset')
 
     st.markdown(''' 
-    Following are plots of the features detected to exhibit drifting by the model.  
+    Following are plots of the features detected to exhibit drifting by the model. Dates on which drift was 
+    detected are in dashed, vertical line. 
     ''')
 
     drifts = adwin_det.stream_detection()
@@ -127,12 +128,12 @@ def main():
 
     if cols in(NUMERIC_FEATURES):
         fig = plots.plot_line(df, cols)
-    if cols in(CAT_FEATURES):
+    else:
         fig = plots.plot_line_cat(df, cols)
 
-    drifts = feature_drifts(drifts, cols)
+    f_drifts = feature_drifts(drifts, cols)
 
-    fig = plots.plot_drift(fig, drifts)
+    fig = plots.plot_drift(fig, f_drifts)
     st.plotly_chart(fig)
 
     st.markdown(''''
@@ -144,8 +145,69 @@ def main():
 
     st.markdown('### Test Dataset')
 
-    test_data = dataset.get_data(DATA_DIR, DATASET)
+    st.markdown('''Before analysing the results of the model using the test set, observing the scores of the
+    model over March--April, there are two dips: The first from April 23rd to May 3rd, and the second from
+    Mat 23rd to the end of the data, on May 31st. 
+    ''')
 
+    test_data = dataset.get_data(DATA_DIR, TEST_DATASET)
+
+    fig = plots.plot_line(test_data, 'score', p_title='Average Score')
+    st.plotly_chart(fig)
+
+    st.markdown(''' 
+      Following are plots of the features detected to exhibit drifting in the test dataset.
+        Dates on which drift was detected are in dashed, vertical line, no line implies no drift was detected. 
+      ''')
+
+    adwin_test = DriftDetection(test_data, ADWIN, delta=0.001)
+
+    test_drifts = adwin_test.stream_detection()
+
+    cols = st.selectbox('Features:', adwin_test.stream_data.columns, key='drift_test')
+
+    if cols in (NUMERIC_FEATURES):
+        fig = plots.plot_line(test_data, cols)
+    else:
+        ohe_cat = dataset.ohe(test_data, CAT_FEATURES)
+        fig = plots.plot_line_oh(ohe_cat, cols)
+
+    if test_drifts['feature'].str.contains(cols).any():
+        f_test_drifts = feature_drifts(test_drifts, cols)
+        fig = plots.plot_drift(fig, f_test_drifts)
+
+    st.plotly_chart(fig)
+
+    st.markdown('''
+     In the test dataset, the feature exhibiting drift is **payment_method**. Specifically, the number of credit
+     card orders dips twice, simultaneously to increases in the number of Stripe orders.
+     The dates of these changes correspond to the deterioration scores predicted by the model, indicating these 
+     are the variables with drift.\n
+     While the ADWIN model detects these changes, as with the training set, the model is highly sensitive to 
+     changes in the initial period, and reports false positives for features with no drift.  
+     ''')
+
+    st.markdown('### Further Work')
+    st.markdown('''
+    The results of the model chosen indicate more work is needed in order to for it to be helpful in detecting
+    data drift.\n
+    More concretely:
+    ''')
+    st.markdown('''
+        - The confidence variable, delta, can be chosen more carefully, either by simulations, or by validation
+        datasets.
+        - Similarly, the batch size can be chosen by validation in order to handle noisy data better.
+        - Alternatively to aggregating by batch, more complex smoothing methods can be employed.  
+    ''')
+
+    st.markdown('## Task 3')
+    st.markdown("![Task 3](https://raw.githubusercontent.com/DafnaKoby/riskified_home_test/master/2021-12-11-task3.PNG)")
+
+    st.markdown('## References')
+    st.markdown('''
+    [Machine Learning for Data Streams: with Practical Examples in MOA](https://www.cms.waikato.ac.nz/~abifet/book/chapter_5.html)\n
+    [8 Concept Drift Detection Methods](https://www.aporia.com/blog/concept-drift-detection-methods/)
+    ''')
 
 
 if __name__ == '__main__':

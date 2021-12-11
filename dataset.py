@@ -4,8 +4,14 @@ import numpy as np
 from config import *
 
 def get_data(dir, file_name):
+    """
+    :param dir: directory from which file is loaded
+    :param file_name: file to load
+    :return: dataset for drift detection, without irrelevant column, and
+    with time column formatted as such.
+    """
     df = pd.read_csv(f'{dir}/{file_name}?raw=true')
-    df['created_at'] = pd.to_datetime(df['created_at'])
+    df['created_at'] = pd.to_datetime(df[TIME_COL])
 
     df = df.drop('order_id', axis=1)
 
@@ -22,7 +28,11 @@ def ohe(data, col_to_ohe):
 
 
 def get_batch(data):
-
+    """
+    Divides data into batches of samples within same time frame (TIME_COL).
+    :param data: dataframe with time column.
+    :return: input dataframe, with batch column added.
+    """
     data.sort_values(TIME_COL, inplace=False)
     data['batch'] = data.groupby(TIME_COL).cumcount() // BATCH_SIZE
 
@@ -30,6 +40,14 @@ def get_batch(data):
 
 
 def to_batch(cat_data, num_data):
+    """
+    Aggregates data into one sample of time X batch.
+    For categorical data, values are counted
+    For numerical data, values are averaged
+    :param cat_data: dataframe of categorical features. must include time and batch columns
+    :param num_data: dataframe of numerical features. must include time and batch columns
+    :return: one dataframe where each line is the aggregate measure of its time X batch
+    """
 
     batched_num = num_data.groupby([TIME_COL, 'batch'])\
         .mean().reset_index()
@@ -48,6 +66,12 @@ def to_batch(cat_data, num_data):
 
 
 def split_cat_num(data, CAT_FEATURES):
+    """
+    :param data: dataframe of numerical and categorical features.
+    :param CAT_FEATURES: categorical features to be split from numerical.
+    names must be included in the columns of initial dataframe
+    :return: 2 dataframes: categorical, and numeric
+    """
 
     cat_data = data[[TIME_COL, 'batch']+CAT_FEATURES]
     num_data = data.drop(CAT_FEATURES, axis=1)
@@ -56,6 +80,11 @@ def split_cat_num(data, CAT_FEATURES):
 
 
 def split_date_data(data, time_col):
+    """
+    :param data: dataframe of features to test for drift
+    :param time_col: name of column in dataframe 'data' indexing time
+    :return: 2 dataframes of features and their corresponding stream time
+    """
 
     dates = data[time_col]
     data = data.drop(time_col, axis=1)
@@ -66,7 +95,8 @@ def split_date_data(data, time_col):
 def editting(data):
     """
     function to pipe some of our function in order to transform the data
-    :return: dataframe
+    :param data: raw data
+    :return: processed dataframe to feed to detector
     """
     data = data.drop('score', axis=1)
     with_batches = get_batch(data)
