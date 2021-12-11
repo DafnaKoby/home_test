@@ -1,7 +1,5 @@
 import pandas as pd
 import plotly.express as px
-from config import *
-
 
 def plot_hist(data, col):
     fig = px.histogram(data, x=col)
