@@ -50,6 +50,7 @@ def main():
             5.8 on February 26th.
             - **avs_match** - also on February 19th, there is a steep decline in *country* type match, 
             simultaneously with a rise in *None* match.
+            - **ip_score** - similarly, on February 19, begins to sharply climb. 
     ''')
 
     cols = st.selectbox('Features:', NUMERIC_FEATURES + CAT_FEATURES, key='drift_feat')
@@ -98,7 +99,7 @@ def main():
     ''')
 
     st.markdown('''Since, as specified in the task, drifts can occur at different times, features, and intensities
-    and we are interested in detecting the drift as early as possible, the ADWIN algorithm is chosen.
+    and we are interested in detecting the drift as early as possible, the **ADWIN** algorithm is chosen.
     ''')
 
     st.markdown('### Feature Engineering')
@@ -130,14 +131,15 @@ def main():
     if cols in(NUMERIC_FEATURES):
         fig = plots.plot_line(df, cols)
     else:
-        fig = plots.plot_line_cat(df, cols)
+        ohe_cat = dataset.ohe(df, CAT_FEATURES)
+        fig = plots.plot_line_oh(ohe_cat, cols)
 
     f_drifts = feature_drifts(drifts, cols)
 
     fig = plots.plot_drift(fig, f_drifts)
     st.plotly_chart(fig)
 
-    st.markdown(''''
+    st.markdown('''
         While the model does locate the drift in **external_email_score** and **avs_match**, it appears to be 
         overly sensitive, and flags other instances as well, and among other features. More specifically, 
         there seems to be problem when facing early stream data. This can be attributed to the window being too small
@@ -205,7 +207,7 @@ def main():
     st.markdown("![Task 3](https://raw.githubusercontent.com/DafnaKoby/riskified_home_test/master/2021-12-11-task3.PNG)")
 
     st.markdown('''
-        At the offline stage, current data is collected to create a historical dataset.
+        At the offline stage, current data is collected to create a historical dataset in the DWH.
         The historical dataset is then used to tune the hyperparameters of the drift detector.
         At the online stage, the tuned detector obtained from the offline learning is used to process the
          data streams. If concept drift is detected in the new data streams, users are alarmed, and the detector will then be
