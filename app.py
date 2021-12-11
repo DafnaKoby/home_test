@@ -203,6 +203,15 @@ def main():
     st.markdown('## Task 3')
     st.markdown("![Task 3](https://raw.githubusercontent.com/DafnaKoby/riskified_home_test/master/2021-12-11-task3.PNG)")
 
+    st.markdown('''
+        At the offline stage, current data is collected to create a historical dataset.
+        The historical dataset is then used to tune the hyperparameters of the drift detector.
+        At the online stage, the tuned detector obtained from the offline learning is used to process the
+         data streams. If concept drift is detected in the new data streams, users are alarmed, and the detector will then be
+         retrained on the new concept data samples collected.
+    ''')
+
+
     st.markdown('## References')
     st.markdown('''
     [Machine Learning for Data Streams: with Practical Examples in MOA](https://www.cms.waikato.ac.nz/~abifet/book/chapter_5.html)\n
