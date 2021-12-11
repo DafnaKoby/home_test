@@ -1,16 +1,14 @@
-# This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from DriftDetection import DriftDetection
+import dataset
 
+from river.drift import ADWIN
+from config import *
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+df = dataset.get_data(DATA_DIR, DATASET)
 
+adwin_det = DriftDetection(df, ADWIN, delta=0.001)
+dates, cols = adwin_det.stream_detection()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+print('done')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
