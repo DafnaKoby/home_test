@@ -18,7 +18,7 @@ def main():
     st.markdown('For the code generating this app, click [here](https://github.com/DafnaKoby/home_test)')
 
     st.markdown('## Data Exploration')
-    st.markdown('In the table below...')
+    st.markdown('In the table below are the top 100 rows of the training dataset:')
 
     st.write(df.head(100))
 
